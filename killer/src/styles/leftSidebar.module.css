@@ -1,12 +1,21 @@
 /* Panel explorador (leftSidebar.tsx). */
 .sidebar {
   width: 260px;
+  flex-shrink: 0;
   background: #ffffff;
   border-right: 1px solid #e5e7eb;
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  overflow-y: auto;
+  transition: margin-left 0.25s ease, visibility 0.25s ease;
+}
+
+/* Plegado: se desliza fuera; el contenedor tiene overflow hidden. */
+.sidebar.collapsed {
+  margin-left: -260px;
+  visibility: hidden;
 }
 
 .sidebarHeader {
@@ -82,5 +91,11 @@
     width: 100%;
     border-right: none;
     border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* En vertical el deslizamiento horizontal no tiene gracia. */
+  .sidebar.collapsed {
+    display: none;
+    margin-left: 0;
   }
 }

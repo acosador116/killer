@@ -4,6 +4,8 @@ import styles from "../styles/chooseDir.module.css";
 
 interface Props {
   chooseDir: (path: string) => boolean;
+  // Permite cerrar el diálogo sin elegir nada (botón ✕).
+  onCancel?: () => void;
   directory: Directory;
 }
 
@@ -69,7 +71,18 @@ export function ChooseDirectoryOfEnter(props: Props) {
 
   return (
     <div class={styles["container-explorer"]}>
-      <div class={styles.explorer}>
+      {props.onCancel && (
+        <button
+          type="button"
+          class={styles["close-btn"]}
+          title="Cerrar"
+          onClick={() => props.onCancel?.()}
+        >
+          ✕
+        </button>
+      )}
+
+      <div class={`${styles.explorer} scroll-hover`}>
         <DirectoryNode
           directory={props.directory}
           selectedPath={selectedPath}

@@ -9,6 +9,8 @@ type Props = {
   // Carpeta contenedora de `directory`, si existe. Con ella se pinta
   // la fila "..." para subir un nivel.
   parent?: Directory | null;
+  // Plegado horizontal del panel (lo controla el botón ☰ de App).
+  collapsed?: boolean;
   chooseFile: (filePath: string) => boolean;
   chooseDirectory: (dirPath: string) => boolean;
 };
@@ -40,7 +42,10 @@ export function LeftSideabar(props: Props) {
   };
 
   return (
-    <aside class={styles.sidebar}>
+    <aside
+      class={`${styles.sidebar} scroll-hover`}
+      classList={{ [styles.collapsed]: !!props.collapsed }}
+    >
       <div class={styles.sidebarHeader}>
         📁
         <span class={styles["title"]}>{props.directory.name} </span>

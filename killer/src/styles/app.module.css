@@ -1,12 +1,59 @@
-/* Layout principal de la app (App.tsx). */
+/* Layout principal de la app (App.tsx).
+   La app NO hace scroll: la barra arriba, y debajo sidebar + visor
+   reparten el alto fijo de la pantalla. */
 .app {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toolTitle {
+  margin-right: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.toolBtn {
+  border: none;
+  background: transparent;
+  padding: 0.3rem 0.55rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  line-height: 1;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.toolBtn:hover {
+  background: #f3f4f6;
+}
+
+/* Fila que contiene sidebar + visor. min-height:0 evita que los
+   hijos con overflow rompan el alto fijo del layout. */
+.content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 @media (max-width: 720px) {
-  .app {
+  .content {
     flex-direction: column;
   }
 }

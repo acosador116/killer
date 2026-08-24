@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   padding: 1.25rem 1.5rem;
   background: #fafafa;
 }
@@ -34,6 +35,9 @@
 .codeBlock {
   margin: 0;
   flex: 1;
+  /* Sin esto, un hijo flex con contenido largo no encoge y su propio
+     scroll nunca se activa (el overflow se recorta más arriba). */
+  min-height: 0;
   padding: 1.1rem;
   border-radius: 8px;
   border: 1px solid #e5e7eb;

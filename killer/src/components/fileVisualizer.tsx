@@ -14,7 +14,7 @@ export default function FileVisualizer(props: Props) {
             <span class={styles.viewerBadge}>archivo</span>
             <h2>{props.file.name}</h2>
           </div>
-          <pre class={styles.codeBlock}>{props.file.data}</pre>
+          <pre class={`${styles.codeBlock} scroll-hover`}>{props.file.data}</pre>
         </>
       )}
     </section>

@@ -16,7 +16,11 @@ function App() {
   // Arranca en "src"; si no existiera, cae a la raíz del árbol.
   const [directory, setDirectory] = createSignal<Directory>(archs);
 
-  const [open, setOpen] = createSignal<boolean>(true);
+  // Diálogo de configuración de ruta: cerrado por defecto; se abre
+  // con el botón ⚙️ de la barra superior.
+  const [configOpen, setConfigOpen] = createSignal<boolean>(false);
+  // Sidebar desplegable.
+  const [sidebarOpen, setSidebarOpen] = createSignal<boolean>(true);
 
   // chooseFile se usa al hacer doble click en un archivo.
   // Este setter debe producir un valor nuevo para que Solid vuelva a renderizar.
@@ -44,7 +48,7 @@ function App() {
     }
 
     setDirectory(nextDirectory);
-    setOpen(false)
+    setConfigOpen(false);
     return true;
   };
 
@@ -54,14 +58,45 @@ function App() {
 
   return (
     <main class={styles["app"]}>
-      <LeftSideabar
-        directory={directory()}
-        parent={parentDirectory()}
-        chooseFile={chooseFile}
-        chooseDirectory={chooseDirectory}
-      />
-      <FileVisualizer file={fileUse()} />
-      {open() && <ChooseDirectoryOfEnter chooseDir={chooseDirectory} directory={archs} />}
+      {/* Barra superior: plegar sidebar y configurar la ruta. */}
+      <header class={styles.toolbar}>
+        <button
+          type="button"
+          class={styles.toolBtn}
+          title={sidebarOpen() ? "Ocultar explorador" : "Mostrar explorador"}
+          onClick={() => setSidebarOpen((value) => !value)}
+        >
+          ☰
+        </button>
+        <span class={styles.toolTitle}>blonter</span>
+        <button
+          type="button"
+          class={styles.toolBtn}
+          title="Configurar ruta"
+          onClick={() => setConfigOpen(true)}
+        >
+          ⚙️
+        </button>
+      </header>
+
+      <div class={styles.content}>
+        <LeftSideabar
+          directory={directory()}
+          parent={parentDirectory()}
+          chooseFile={chooseFile}
+          chooseDirectory={chooseDirectory}
+          collapsed={!sidebarOpen()}
+        />
+        <FileVisualizer file={fileUse()} />
+      </div>
+
+      {configOpen() && (
+        <ChooseDirectoryOfEnter
+          chooseDir={chooseDirectory}
+          directory={archs}
+          onCancel={() => setConfigOpen(false)}
+        />
+      )}
     </main>
   );
 }

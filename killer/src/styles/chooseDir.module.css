@@ -24,6 +24,25 @@
   overflow: auto;
 }
 
+.close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0.45rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  line-height: 1;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+}
+
 .file-item {
   width: 100%;
   display: flex;

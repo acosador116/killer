@@ -1,0 +1,17 @@
+/* Estilos globales de la app: reset básico y tipografía.
+   Se importa una sola vez desde index.tsx. */
+:global(html, body, #root) {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+:global(body) {
+  font-family: Inter, "Segoe UI", sans-serif;
+  background: #fafafa;
+  color: #1f2328;
+}
+
+:global(*) {
+  box-sizing: border-box;
+}

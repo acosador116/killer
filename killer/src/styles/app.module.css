@@ -1,0 +1,12 @@
+/* Layout principal de la app (App.tsx). */
+.app {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+@media (max-width: 720px) {
+  .app {
+    flex-direction: column;
+  }
+}

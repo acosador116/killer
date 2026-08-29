@@ -6,7 +6,7 @@
   min-width: 0;
   min-height: 0;
   padding: 1.25rem 1.5rem;
-  background: #fafafa;
+  background: hsl(var(--card));
 }
 
 .viewerHeader {
@@ -14,7 +14,7 @@
   align-items: baseline;
   gap: 0.75rem;
   padding-bottom: 0.9rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid hsl(var(--border));
   margin-bottom: 1rem;
 }
 
@@ -22,14 +22,14 @@
   margin: 0;
   font-size: 1.15rem;
   font-weight: 600;
-  color: #1f2328;
+  color: hsl(var(--foreground));
 }
 
 .viewerBadge {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #9ca3af;
+  color: hsl(var(--muted-foreground));
 }
 
 .codeBlock {
@@ -40,9 +40,9 @@
   min-height: 0;
   padding: 1.1rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #24292f;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.88rem;
   line-height: 1.65;

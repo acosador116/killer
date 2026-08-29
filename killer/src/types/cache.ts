@@ -20,6 +20,7 @@ type Fille = {
     path: string;
     name: string;
     data: string;
+    extension: string;
 }
 
 export type {Fille, ListFiles, Directory, FilleDeck}

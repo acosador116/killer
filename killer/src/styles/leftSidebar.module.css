@@ -1,9 +1,9 @@
-/* Panel explorador (leftSidebar.tsx). */
+/* Panel explorador (explorer.tsx / leftSidebar). */
 .sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  background: hsl(var(--card));
+  border-right: 1px solid hsl(var(--border));
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
@@ -27,21 +27,21 @@
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: hsl(var(--muted-foreground));
 }
 
 .brandDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #1f2328;
+  background: hsl(var(--foreground));
 }
 
 .title {
   font-size: 0.9rem;
   text-transform: none;
   letter-spacing: normal;
-  color: #1f2328;
+  color: hsl(var(--foreground));
 }
 
 .fileList {
@@ -60,7 +60,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #6b7280;
+  color: hsl(var(--muted-foreground));
   font-size: 0.9rem;
   text-align: left;
   cursor: pointer;
@@ -68,7 +68,7 @@
 }
 
 .upRow:hover {
-  background: #f3f4f6;
+  background: hsl(var(--muted));
 }
 
 .upIcon {
@@ -81,8 +81,8 @@
   margin: 0;
   padding: 0.6rem 0.75rem;
   border-radius: 6px;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: hsl(var(--destructive) / 0.15);
+  color: hsl(var(--destructive-foreground));
   font-size: 0.82rem;
 }
 
@@ -90,7 +90,7 @@
   .sidebar {
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   /* En vertical el deslizamiento horizontal no tiene gracia. */

@@ -1,12 +1,19 @@
+/* Tokens que global.css referencia pero no define: los declaramos aquí
+   para no tocar global.css. :root no se hashea en los CSS modules. */
+:root {
+  --scroll-thumb: 0 0% 63.9%;
+}
+
 /* Layout principal de la app (App.tsx).
    La app NO hace scroll: la barra arriba, y debajo sidebar + visor
    reparten el alto fijo de la pantalla. */
 .app {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  background-color: hsl(var(--background));
 }
 
 .toolbar {
@@ -14,8 +21,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.75rem;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: hsl(var(--background));
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .toolTitle {
@@ -24,7 +31,7 @@
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: hsl(var(--muted-foreground));
 }
 
 .toolBtn {
@@ -34,13 +41,13 @@
   border-radius: 6px;
   font-size: 1rem;
   line-height: 1;
-  color: #374151;
+  color: hsl(var(--foreground));
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .toolBtn:hover {
-  background: #f3f4f6;
+  background: hsl(var(--muted));
 }
 
 /* Fila que contiene sidebar + visor. min-height:0 evita que los

@@ -1,103 +1,87 @@
 
-import { createSignal } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
 import styles from "./styles/app.module.css";
 import { archs } from "./cache/file";
-import FileVisualizer from "./components/fileVisualizer";
-import { LeftSideabar } from "./components/leftSidebar";
+import FileVisualizer from "./components/visualizer/fileVisualizer";
+import { Explorer } from "./components/explorer";
+import Sidebar from "./components/sidebar";
 import { fileService } from "./services/fileService";
 import { Directory, Fille } from "./types/cache";
 import { ChooseDirectoryOfEnter } from "./components/chooseDirectoryOfEnter";
+import { storageService } from "./services/storageSerivce";
+
+let st = storageService.directionsDir.getDirection()
+if (!st) st = archs.path
+let dirss = fileService.getDirectoryByPath(st, archs)
 
 // La aplicación principal conecta el árbol de directorios con el visor.
 function App() {
-  // fileUse guarda el archivo actualmente seleccionado para visualización.
-  const [fileUse, setFileUse] = createSignal<Fille | null>(null);
-  // directory es la carpeta que muestra el explorador izquierdo.
-  // Arranca en "src"; si no existiera, cae a la raíz del árbol.
-  const [directory, setDirectory] = createSignal<Directory>(archs);
+  const [directory, setDirectory] = createSignal<Directory>(dirss as Directory);
+  const [parent, setParent] = createSignal<Directory | null>(null);
+  const [currentFile, setCurrentFile] = createSignal<Fille | null>(null);
+  const [openChoose, setOpenChoose] = createSignal(false);
+  const [openPanel, setOpenPanel] = createSignal(true);
 
-  // Diálogo de configuración de ruta: cerrado por defecto; se abre
-  // con el botón ⚙️ de la barra superior.
-  const [configOpen, setConfigOpen] = createSignal<boolean>(false);
-  // Sidebar desplegable.
-  const [sidebarOpen, setSidebarOpen] = createSignal<boolean>(true);
+  createEffect(() => {
+    setParent(fileService.getParentByPath(dirss?.path as string, archs))
+  })
 
-  // chooseFile se usa al hacer doble click en un archivo.
-  // Este setter debe producir un valor nuevo para que Solid vuelva a renderizar.
-  const chooseFile = (path: string): boolean => {
-    const nextFile = fileService.getFileByPath(path);
-
-    if (!nextFile) {
-      setFileUse(null);
-      return false;
-    }
-
-    setFileUse({ ...nextFile });
+  // Al elegir un archivo lo cargamos en el visor.
+  const chooseFile = (filePath: string): boolean => {
+    const file = fileService.getFileByPath(filePath);
+    if (!file) return false;
+    setCurrentFile(file);
     return true;
   };
 
-  // chooseDirectory cambia la carpeta raíz del explorador izquierdo.
-  // Mismo patrón que chooseFile: false si la ruta no existe, sin lanzar
-  // excepciones (un throw vacío rompía la app sin ningún mensaje).
-  const chooseDirectory = (path: string): boolean => {
-
-    const nextDirectory = fileService.getDirectoryByPath(path, archs);
-
-    if (!nextDirectory) {
-      return false;
-    }
-
-    setDirectory(nextDirectory);
-    setConfigOpen(false);
+  // Al elegir una carpeta navegamos dentro de ella y reiniciamos el visor.
+  const chooseDirectory = (dirPath: string): boolean => {
+    const dir = fileService.getDirectoryByPath(dirPath, archs);
+    if (!dir) return false;
+    setDirectory(dir);
+    setParent(fileService.getParentByPath(dirPath, archs));
+    setCurrentFile(null);
+    storageService.directionsDir.setDirection(dirPath);
     return true;
   };
 
-  // Carpeta contenedora de la actual; null en la raíz.
-  // Se recalcula sola cuando cambia `directory`.
-  const parentDirectory = () => fileService.getParentByPath(directory().path, archs);
+  // El diálogo de selección de carpeta raíz cierra tras confirmar.
+  const chooseDir = (path: string): boolean => {
+    const ok = chooseDirectory(path);
+    setOpenChoose(false);
+    return ok;
+  };
 
   return (
-    <main class={styles["app"]}>
-      {/* Barra superior: plegar sidebar y configurar la ruta. */}
-      <header class={styles.toolbar}>
-        <button
-          type="button"
-          class={styles.toolBtn}
-          title={sidebarOpen() ? "Ocultar explorador" : "Mostrar explorador"}
-          onClick={() => setSidebarOpen((value) => !value)}
-        >
-          ☰
-        </button>
-        <span class={styles.toolTitle}>blonter</span>
-        <button
-          type="button"
-          class={styles.toolBtn}
-          title="Configurar ruta"
-          onClick={() => setConfigOpen(true)}
-        >
-          ⚙️
-        </button>
-      </header>
+    <div class={styles.app}>
+      <Sidebar
+        directoryName={directory().name}
+        onTogglePanel={() => setOpenPanel((p) => !p)}
+        onOpenChoose={() => setOpenChoose(!openChoose())}
+      />
 
-      <div class={styles.content}>
-        <LeftSideabar
-          directory={directory()}
-          parent={parentDirectory()}
-          chooseFile={chooseFile}
-          chooseDirectory={chooseDirectory}
-          collapsed={!sidebarOpen()}
-        />
-        <FileVisualizer file={fileUse()} />
-      </div>
+      <main class={styles.content}>
+        <Show when={openPanel()}>
+          <Explorer
+            directory={directory()}
+            parent={parent()}
+            collapsed={false}
+            chooseFile={chooseFile}
+            chooseDirectory={chooseDirectory}
+          />
+        </Show>
 
-      {configOpen() && (
+        <FileVisualizer file={currentFile()} />
+      </main>
+
+      <Show when={openChoose()}>
         <ChooseDirectoryOfEnter
-          chooseDir={chooseDirectory}
           directory={archs}
-          onCancel={() => setConfigOpen(false)}
+          chooseDir={chooseDir}
+          onCancel={() => setOpenChoose(false)}
         />
-      )}
-    </main>
+      </Show>
+    </div>
   );
 }
 

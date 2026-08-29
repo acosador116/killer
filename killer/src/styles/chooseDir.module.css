@@ -10,12 +10,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  width: 300px;
-  max-height: 400px;
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
+  width: 330px;
+  min-height: calc-size(fit-content, size + 40px);
+  max-height: 430px;
+  padding: 30px;
+  border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  background: #ffffff;
+  background: hsl(var(--card));
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.15);
 }
 
@@ -34,13 +35,13 @@
   border-radius: 6px;
   font-size: 1rem;
   line-height: 1;
-  color: #6b7280;
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .close-btn:hover {
-  background: #f3f4f6;
+  background: hsl(var(--muted));
 }
 
 .file-item {
@@ -53,7 +54,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #374151;
+  color: hsl(var(--foreground));
   font-size: 0.9rem;
   text-align: left;
   cursor: pointer;
@@ -61,12 +62,12 @@
 }
 
 .file-item:hover {
-  background: #f3f4f6;
+  background: hsl(var(--muted));
 }
 
 /* Carpeta elegida actualmente. */
 .file-item.selected {
-  background: #e5e7eb;
+  background: hsl(var(--accent));
   font-weight: 600;
 }
 
@@ -80,8 +81,8 @@
   padding: 0.55rem 1rem;
   border: none;
   border-radius: 6px;
-  background: #1f2328;
-  color: #ffffff;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
   font-size: 0.9rem;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -92,7 +93,7 @@
 }
 
 .confirm-btn:disabled {
-  background: #d1d5db;
-  color: #6b7280;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
   cursor: not-allowed;
 }

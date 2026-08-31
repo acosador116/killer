@@ -1,3 +1,5 @@
+import type { OpenedFile } from "../types/storage";
+
 export const storageService = {
     directionsDir: {
         setDirection(direction: string) {

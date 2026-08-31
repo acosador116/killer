@@ -8,7 +8,7 @@ type Props = {
   directory: Directory;
   parent?: Directory | null;
   collapsed?: boolean;
-  chooseFile: (filePath: string) => boolean;
+  chooseFile: (filePath: string) => void;
   chooseDirectory: (dirPath: string) => boolean;
 };
 
@@ -19,12 +19,8 @@ export function Explorer(props: Props) {
   // Envuelve la función recibida para agregar manejo de errores.
   // Debe devolver exactamente boolean porque DirectoryItem espera esa firma.
   const handleChooseFile = (filePath: string): boolean => {
-    const trust = props.chooseFile(filePath);
+     props.chooseFile(filePath);
 
-    if (!trust) {
-      setError("Hubo un error al abrir la dirección");
-      return false;
-    }
 
     return true;
   };

@@ -1,0 +1,112 @@
+.main {
+    width: 100%;
+    height: 50px;
+    border-bottom: 1px solid hsl(var(--border));
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0 0.75rem;
+    background: hsl(var(--card));
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    /* Firefox: oculta por defecto */
+    scrollbar-width: thin;
+    scrollbar-color: transparent hsl(var(--card));
+}
+
+.main:hover {
+    scrollbar-color: hsl(var(--border)) transparent;
+}
+
+/* Chrome, Safari, Edge */
+.main::-webkit-scrollbar {
+    height: 1px;
+}
+
+.main::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.main::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+}
+
+.main:hover::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+}   
+
+.openedFile {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.6rem;
+    
+    border-radius: 6px;
+    background: hsl(var(--muted));
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.openedFile:hover {
+    border: 1px solid hsl(var(--border));
+}
+.openedFile.active {
+    background: hsl(var(--secondary));
+    border-color: hsl(var(--ring));
+    font-weight: 600;
+}
+
+.openFile {
+    border: none;
+    background: transparent;
+    color: hsl(var(--foreground));
+    font-size: 0.85rem;
+    cursor: pointer;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.closeBtn {
+    border: none;
+    background: transparent;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    border-radius: 3px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.closeBtn:hover {
+    background: hsl(var(--destructive) / 0.15);
+    color: hsl(var(--destructive));
+}
+
+.empty {
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+}
+
+.closeAllBtn {
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.closeAllBtn:hover {
+    background: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+    border-color: hsl(var(--destructive));
+}

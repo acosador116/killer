@@ -1,17 +1,6 @@
 import { createSignal, createEffect, onCleanup } from "solid-js";
-import { useTheme, themes, type ThemeName } from "../contexts/ThemeContext";
+import { useTheme, themes } from "../contexts/ThemeContext";
 import styles from "../styles/themeToggleSidebar.module.css";
-
-const previewMap: Record<ThemeName, string> = {
-  light: "linear-gradient(135deg, #f1f5f9, #e2e8f0)",
-  dark: "linear-gradient(135deg, #334155, #020617)",
-  ocean: "linear-gradient(135deg, #38bdf8, #06b6d4)",
-  coffee: "linear-gradient(135deg, #f59e0b, #ea580c)",
-  forest: "linear-gradient(135deg, #22c55e, #15803d)",
-  sakura: "hotpink",
-  sunset: "linear-gradient(135deg, #a855f7, #ec4899)",
-  
-};
 
 export function ThemeToggleSidebar() {
   const { theme, setTheme } = useTheme();

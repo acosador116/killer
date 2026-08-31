@@ -50,3 +50,16 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+  font-style: italic;
+  border: 1px dashed hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--muted) / 0.3);
+}

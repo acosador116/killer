@@ -1,41 +1,95 @@
+/**
+ * @file App.tsx — Orquestador principal con soporte Go + fallback web
+ *
+ * ## Arquitectura con túnel IPC
+ * ```text
+ *  App.tsx
+ *   ├─> fsCache.init(archs) ──> fsService.tree() ──invoke--> Rust ──stdin--> Go
+ *   ├─> Explorer (directory + parent) ──> chooseDirectory (async)
+ *   ├─> FileVisualizer (currentFile)
+ *   └─> ChooseDirectoryOfEnter (rootDir)
+ * ```
+ *
+ * ## Flujo inicial
+ * 1. `getInitialDirectory()` lee `localStorage.direction` (última carpeta visitada).
+ * 2. `fsCache.init(archs)` intenta cargar árbol real de Go (profundidad 3).
+ *    - Si Go está vivo, `rootDir` se actualiza al árbol real.
+ *    - Si falla, se queda con `archs` mock (modo web).
+ * 3. `directory` se sincroniza con el `rootDir` si el path guardado no existe en el nuevo árbol.
+ *
+ * ## Ejemplo de navegación real
+ * ```ts
+ * // Usuario hace doble clic en "/src"
+ * chooseDirectory("/src") // -> fileService.listDir("/src") -> Go -> setDirectory
+ *
+ * // Usuario abre "/src/App.tsx"
+ * chooseFile("/src/App.tsx") // -> fileService.readFile() -> Go -> setCurrentFile
+ * ```
+ */
 
-import { createEffect, createSignal, Show } from "solid-js";
+import { createEffect, createSignal, onMount, Show } from "solid-js";
 import styles from "./styles/app.module.css";
-import { archs } from "./cache/file";
+import { archs as mockArchs } from "./cache/file";
 import FileVisualizer from "./components/visualizer/fileVisualizer";
 import { Explorer } from "./components/explorer";
 import Sidebar from "./components/sidebar";
 import { fileService } from "./services/fileService";
+import { fsCache } from "./cache/fsCache";
 import { Directory, Fille } from "./types/cache";
 import { ChooseDirectoryOfEnter } from "./components/chooseDirectoryOfEnter";
 import { storageService } from "./services/storageSerivce";
 import { OpenedFiles } from "./components/openedFiles";
 import type { OpenedFile } from "./types/storage";
 
-// La aplicación principal conecta el árbol de directorios con el visor.
 function App() {
-  // Inicialización segura dentro del componente: si el path guardado no existe,
-  // caemos a la raíz (archs) para evitar `directory()` === null y pantallas en blanco.
+  // Raíz del filesystem: inicia como mock, luego se reemplaza por árbol real de Go
+  const [rootDir, setRootDir] = createSignal<Directory>(mockArchs);
+  const [isRealFs, setIsRealFs] = createSignal(false);
+
   const getInitialDirectory = (): Directory => {
     try {
-      const st = storageService.directionsDir.getDirection() ?? archs.path;
-      return fileService.getDirectoryByPath(st, archs) ?? archs;
+      const st = storageService.directionsDir.getDirection() ?? mockArchs.path;
+      return fileService.getDirectoryByPath(st, mockArchs) ?? mockArchs;
     } catch {
-      return archs;
+      return mockArchs;
     }
   };
 
   const initialDir = getInitialDirectory();
   const [directory, setDirectory] = createSignal<Directory>(initialDir);
   const [parent, setParent] = createSignal<Directory | null>(
-    fileService.getParentByPath(initialDir.path, archs)
+    fileService.getParentByPath(initialDir.path, mockArchs)
   );
   const [currentFile, setCurrentFile] = createSignal<Fille | null>(null);
   const [openChoose, setOpenChoose] = createSignal(false);
   const [openPanel, setOpenPanel] = createSignal(true);
+  const [loadingRoot, setLoadingRoot] = createSignal(false);
 
-  // --- Sistema de archivos abiertos (reactivo, sin rediseñar service) ---
-  // Carga inicial tolerante: filtra vacíos, duplicados y rutas que ya no existen.
+  // Carga inicial desde Go (si está disponible)
+  onMount(async () => {
+    setLoadingRoot(true);
+    try {
+      const realRoot = await fsCache.init(mockArchs, ".");
+      setRootDir(realRoot);
+      setIsRealFs(fsCache.isReal);
+      // Si el directorio inicial no existe en el árbol real, caer a root real
+      const savedPath = storageService.directionsDir.getDirection() ?? realRoot.path;
+      const found = fileService.getDirectoryByPath(savedPath, realRoot);
+      if (found) {
+        setDirectory(found);
+        setParent(fileService.getParentByPath(found.path, realRoot));
+      } else {
+        setDirectory(realRoot);
+        setParent(null);
+      }
+      console.log(`[App] FS init: ${fsCache.isReal ? "real (Go)" : "mock"}`);
+    } catch (e) {
+      console.warn("[App] fsCache.init failed, staying on mock:", e);
+    } finally {
+      setLoadingRoot(false);
+    }
+  });
+
   const getInitialOpenedFiles = (): OpenedFile[] => {
     try {
       const raw = storageService.filesOpen.file.getFiles();
@@ -44,10 +98,8 @@ function App() {
         if (!f.path || !f.path.trim()) return false;
         if (seen.has(f.path)) return false;
         seen.add(f.path);
-        // Si el archivo ya no existe en el cache, lo descartamos (evita tabs fantasmas)
         return fileService.getFileByPath(f.path) !== null;
       });
-      // Si filtramos algo, re-sincronizamos storage para no dejar basura
       if (filtered.length !== raw.length) {
         try {
           storageService.filesOpen.path.setFiles(filtered.map((f) => f.path).join(":"));
@@ -61,22 +113,23 @@ function App() {
 
   const [openedFiles, setOpenedFiles] = createSignal<OpenedFile[]>(getInitialOpenedFiles());
 
+  // Mantener `parent` sincronizado con `directory` y `rootDir`
   createEffect(() => {
-    setParent(fileService.getParentByPath(directory().path, archs));
-  })
+    // Access signals to track
+    const dir = directory();
+    const root = rootDir();
+    setParent(fileService.getParentByPath(dir.path, root));
+  });
 
   const addToOpened = (filePath: string) => {
-    // No duplicar: si ya está, no tocar storage ni señal (mantiene orden de apertura)
     try {
       if (storageService.filesOpen.path.fileExist(filePath)) return;
     } catch {}
     try {
       storageService.filesOpen.path.setNewFile(filePath);
     } catch {}
-    // Actualizamos señal local a partir de storage (fuente de verdad sigue siendo el service)
     try {
       const next = storageService.filesOpen.file.getFiles();
-      // Filtro defensivo por si storage quedó corrupto
       const dedup = Array.from(new Map(next.map((f) => [f.path, f])).values());
       setOpenedFiles(dedup);
     } catch {
@@ -93,52 +146,99 @@ function App() {
       storageService.filesOpen.path.removeFile(filePath);
     } catch {}
     setOpenedFiles(remaining);
-    // Si cerramos el archivo visible, mostramos el último abierto o vacío
     if (currentFile()?.path === filePath) {
       if (remaining.length === 0) {
         setCurrentFile(null);
       } else {
         const last = remaining[remaining.length - 1];
+        // Intentar cargar el último archivo (primero mock, luego real si es necesario)
         const file = fileService.getFileByPath(last.path);
         setCurrentFile(file ?? null);
+        // Si no estaba en mock, intentar fetch real async
+        if (!file) {
+          fileService.readFile(last.path).then((real) => {
+            if (real) setCurrentFile(real);
+          });
+        }
       }
     }
   };
 
   const closeAllOpened = () => {
     try {
-      // Vaciamos storage: setFiles con "" deja getFilesList() -> null -> [] , consistente
       storageService.filesOpen.path.setFiles("");
     } catch {}
     setOpenedFiles([]);
     setCurrentFile(null);
   };
 
-  // Al elegir un archivo lo cargamos en el visor y lo registramos como abierto.
-  const chooseFile = (filePath: string) => {
-    const file = fileService.getFileByPath(filePath);
-    if (!file) return;
-    setCurrentFile(file);
-    addToOpened(filePath);
-    return;
+  // Al elegir un archivo: primero intenta FS real, luego mock
+  const chooseFile = async (filePath: string) => {
+    // Optimista: probar mock rápido
+    let file = fileService.getFileByPath(filePath);
+    if (file) {
+      setCurrentFile(file);
+      addToOpened(filePath);
+      return;
+    }
+    // Real: Go
+    try {
+      const real = await fileService.readFile(filePath);
+      if (real) {
+        setCurrentFile(real);
+        addToOpened(filePath);
+        return;
+      }
+    } catch (e) {
+      console.warn("[App] chooseFile failed:", e);
+    }
   };
 
-  // Al elegir una carpeta navegamos dentro de ella y reiniciamos el visor.
-  const chooseDirectory = (dirPath: string): boolean => {
-    const dir = fileService.getDirectoryByPath(dirPath, archs);
+  // Al elegir una carpeta: intenta FS real, luego mock
+  const chooseDirectory = async (dirPath: string): Promise<boolean> => {
+    // Intentar real primero si estamos en modo real
+    if (isRealFs()) {
+      try {
+        const fetched = await fileService.listDir(dirPath, rootDir());
+        setDirectory(fetched);
+        setCurrentFile(null);
+        storageService.directionsDir.setDirection(dirPath);
+        return true;
+      } catch (e) {
+        console.warn("[App] listDir real failed, trying mock:", e);
+      }
+    }
+
+    // Fallback mock: buscar en root actual
+    const dir = fileService.getDirectoryByPath(dirPath, rootDir());
     if (!dir) return false;
     setDirectory(dir);
-    setParent(fileService.getParentByPath(dirPath, archs));
     setCurrentFile(null);
     storageService.directionsDir.setDirection(dirPath);
     return true;
   };
 
-  // El diálogo de selección de carpeta raíz cierra tras confirmar.
-  const chooseDir = (path: string): boolean => {
-    const ok = chooseDirectory(path);
+  // Adapter síncrono para Explorer (que espera boolean)
+  const handleChooseDirectory = (dirPath: string): boolean => {
+    // Fire-and-forget async, pero retornar true optimista
+    chooseDirectory(dirPath);
+    return true;
+  };
+
+  const handleChooseFile = (filePath: string) => {
+    chooseFile(filePath);
+  };
+
+  const chooseDir = async (path: string): Promise<boolean> => {
+    const ok = await chooseDirectory(path);
     setOpenChoose(false);
     return ok;
+  };
+
+  // Wrapper síncrono para ChooseDirectoryOfEnter (que espera (path)=>boolean)
+  const handleChooseDir = (path: string): boolean => {
+    chooseDir(path);
+    return true;
   };
 
   return (
@@ -150,32 +250,36 @@ function App() {
       />
 
       <main class={styles.content}>
+        <Show when={loadingRoot()}>
+          <div style={{ padding: "0.5rem", "font-size": "0.85rem", color: "hsl(var(--muted-foreground))" }}>
+            {isRealFs() ? "Cargando FS real (Go)..." : "Modo mock (web)..."}
+          </div>
+        </Show>
         <Show when={openPanel()}>
           <Explorer
             directory={directory()}
             parent={parent()}
             collapsed={false}
-            chooseFile={chooseFile}
-            chooseDirectory={chooseDirectory}
+            chooseFile={handleChooseFile}
+            chooseDirectory={handleChooseDirectory}
           />
         </Show>
         <div class={styles["container-main"]}>
           <OpenedFiles
             files={openedFiles()}
             activePath={currentFile()?.path ?? null}
-            onSelect={chooseFile}
+            onSelect={handleChooseFile}
             onClose={removeFromOpened}
             onCloseAll={closeAllOpened}
           />
           <FileVisualizer file={currentFile()} />
         </div>
-        
       </main>
 
       <Show when={openChoose()}>
         <ChooseDirectoryOfEnter
-          directory={archs}
-          chooseDir={chooseDir}
+          directory={rootDir()}
+          chooseDir={handleChooseDir}
           onCancel={() => setOpenChoose(false)}
         />
       </Show>

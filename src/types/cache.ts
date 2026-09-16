@@ -1,26 +1,11 @@
-type Directory = {
-    type: 'dir';
-    path: string;
-    name: string;
-    directorys: Directory[];
-    files: FilleDeck[];
-}
+/**
+ * @file cache.ts — re-exporta tipos canónicos de `fs.ts`
+ *
+ * Se mantiene este archivo para compatibilidad con imports existentes:
+ * ```ts
+ * import { Directory } from "../types/cache"
+ * ```
+ * Internamente delega a `fs.ts` que es el contrato real con Go.
+ */
 
-type FilleDeck = {
-    type: "file";
-    name: string;
-    path: string;
-}
-
-type ListFiles = {
-    files: Fille[];
-}
-
-type Fille = {
-    path: string;
-    name: string;
-    data: string;
-    extension?: string;
-}
-
-export type {Fille, ListFiles, Directory, FilleDeck}
+export type { Directory, FileDeck, FilleDeck, Fille, ListFiles, Stat, TreeOptions } from "./fs"

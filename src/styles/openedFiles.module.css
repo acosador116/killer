@@ -83,7 +83,7 @@
 
 .closeBtn:hover {
     background: hsl(var(--destructive) / 0.15);
-    color: hsl(var(--destructive));
+    color: hsl(var(--primary));
 }
 
 .empty {

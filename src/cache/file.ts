@@ -1,4 +1,23 @@
-// Este objeto representa un árbol de archivos mucho más grande y anidado.
+/**
+ * @file file.ts — Mock del filesystem para modo web (sin Tauri/Go)
+ *
+ * Este archivo es el **fallback** cuando el sidecar Go no está disponible.
+ * En `tauri dev` el FS real viene de `src/cache/fsCache.ts` → `fsService` → Rust → Go.
+ * En `vite dev` (navegador) seguimos usando este mock para desarrollar el UI sin backend.
+ *
+ * ## Cuándo se usa
+ * ```ts
+ * // App.tsx
+ * import { archs } from "./cache/file"          // mock
+ * import { fsCache } from "./cache/fsCache"     // real + fallback
+ * const root = await fsCache.init(archs) // intenta Go, si falla usa archs
+ * ```
+ *
+ * ## Estructura
+ * `archs` es un `Directory` con `directorys` anidados y `files`.
+ * `listFiles` es un índice plano de archivos con su `data` (contenido).
+ * Ambos son usados por `fileService.getDirectoryByPath` sincrónico.
+ */
 
 import { Directory, ListFiles } from "../types/cache";
 

@@ -20,9 +20,53 @@
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.15);
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  border-bottom: 1px solid hsl(var(--border));
+  margin: -6px 0 4px;
+}
+
+.headerTitle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  background: transparent;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.headerTitle:hover {
+  background: hsl(var(--muted));
+}
+
+.headerTitle.selected {
+  background: hsl(var(--accent));
+}
+
 .explorer {
   flex: 1;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .close-btn {
@@ -75,6 +119,40 @@
   display: inline-flex;
   width: 1.25rem;
   justify-content: center;
+}
+
+/* Fila "..." para volver a la carpeta contenedora — igual que en el explorador. */
+.upRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.upRow:hover {
+  background: hsl(var(--muted));
+}
+
+.upIcon {
+  display: inline-flex;
+  width: 1.25rem;
+  justify-content: center;
+}
+
+.emptyMsg {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
 }
 
 .confirm-btn {

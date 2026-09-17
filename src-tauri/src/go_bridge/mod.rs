@@ -104,6 +104,7 @@ pub async fn fs_stat(bridge: State<'_, GoBridge>, path: String) -> Result<Value,
 /// const tree = await invoke("fs_tree", { root: ".", maxDepth: 2, showHidden: false })
 /// ```
 #[tauri::command]
+#[allow(non_snake_case)]
 pub async fn fs_tree(
     bridge: State<'_, GoBridge>,
     root: String,

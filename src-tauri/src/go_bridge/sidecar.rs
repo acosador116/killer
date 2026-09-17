@@ -23,10 +23,8 @@
 //! queda en modo `unavailable` y los comandos Tauri retornan error amigable
 //! para que el frontend haga fallback a `cache/file.ts` mock.
 
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 use tokio::sync::Mutex;
@@ -43,6 +41,7 @@ pub struct GoBridge {
 }
 
 struct GoBridgeInner {
+    #[allow(dead_code)]
     child: Mutex<Child>,
     stdin: Mutex<ChildStdin>,
     stdout: Mutex<BufReader<ChildStdout>>,
@@ -238,15 +237,19 @@ impl GoBridge {
     }
 
     /// Helper para binarios que retornan `Directory`
+    #[allow(dead_code)]
     pub async fn list_dir(&self, path: &str) -> Result<Value, String> {
         self.call("list_dir", serde_json::json!({"path": path})).await
     }
+    #[allow(dead_code)]
     pub async fn read_file(&self, path: &str) -> Result<Value, String> {
         self.call("read_file", serde_json::json!({"path": path})).await
     }
+    #[allow(dead_code)]
     pub async fn stat(&self, path: &str) -> Result<Value, String> {
         self.call("stat", serde_json::json!({"path": path})).await
     }
+    #[allow(dead_code)]
     pub async fn tree(&self, root: &str, max_depth: i32, show_hidden: bool) -> Result<Value, String> {
         self.call(
             "tree",

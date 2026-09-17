@@ -18,45 +18,60 @@ fn main() {
     let go = go_bin.unwrap();
     println!("cargo:warning=Building Go sidecar with {}", go);
 
-    // Crear carpeta de binaries si no existe
-    let out_dir = std::path::Path::new("binaries");
-    if let Err(e) = std::fs::create_dir_all(out_dir) {
+    // Crear carpeta de binaries si no existe (absoluta desde CARGO_MANIFEST_DIR)
+    let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let out_dir = manifest_dir.join("binaries");
+    if let Err(e) = std::fs::create_dir_all(&out_dir) {
         println!("cargo:warning=Failed to create binaries dir: {}", e);
         return;
     }
 
-    // Detectar triple de Tauri para nombre de binario con sufijo
-    // En dev, `killer-go` sin sufijo también funciona (resolve_binary_path lo busca)
-    let outputs = [
-        "binaries/killer-go", // dev universal
-        "binaries/killer-go-x86_64-unknown-linux-gnu",
-    ];
+    let go_dir = manifest_dir.join("../go");
+    // Si no existe go_dir (ej: build standalone), fallback a manifest_dir/go
+    let go_dir = if go_dir.exists() {
+        go_dir
+    } else {
+        manifest_dir.join("go")
+    };
 
-    for out in outputs {
-        let status = std::process::Command::new(&go)
-            .args(["build", "-o", out, "../go"])
-            .current_dir(env!("CARGO_MANIFEST_DIR"))
-            .status();
+    let out_main = out_dir.join("killer-go");
+    let out_triple = out_dir.join("killer-go-x86_64-unknown-linux-gnu");
 
-        match status {
-            Ok(s) if s.success() => {
-                println!("cargo:warning=Go sidecar built at {}", out);
-                // Hacer ejecutable
+    // go build debe ejecutarse con cwd = go_dir y construir "." (no "../go")
+    // El bug anterior era `go build -o binaries/killer-go ../go` desde src-tauri,
+    // que en Go >=1.16 falla con "cannot find main module" porque el main module
+    // se busca respecto al cwd (src-tauri, sin go.mod) y ../go no se resuelve como módulo.
+    let status = std::process::Command::new(&go)
+        .args(["build", "-o", &out_main.to_string_lossy().to_string(), "."])
+        .current_dir(&go_dir)
+        .status();
+
+    match status {
+        Ok(s) if s.success() => {
+            println!("cargo:warning=Go sidecar built at {}", out_main.display());
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let _ = std::fs::set_permissions(&out_main, std::fs::Permissions::from_mode(0o755));
+            }
+            // Copiar también al nombre con triple para que Tauri lo encuentre en bundling
+            if let Err(e) = std::fs::copy(&out_main, &out_triple) {
+                println!("cargo:warning=Failed to copy to triple binary: {}", e);
+            } else {
                 #[cfg(unix)]
                 {
                     use std::os::unix::fs::PermissionsExt;
-                    let _ = std::fs::set_permissions(out, std::fs::Permissions::from_mode(0o755));
+                    let _ = std::fs::set_permissions(&out_triple, std::fs::Permissions::from_mode(0o755));
                 }
-            }
-            Ok(s) => {
-                println!("cargo:warning=Go build failed with status {} for {}", s, out);
-            }
-            Err(e) => {
-                println!("cargo:warning=Failed to run go build: {} for {}", e, out);
+                println!("cargo:warning=Go sidecar also copied to {}", out_triple.display());
             }
         }
-        // Solo necesitamos construir una vez; el loop es por si queremos múltiples triples
-        break;
+        Ok(s) => {
+            println!("cargo:warning=Go build failed with status {} for {} (go_dir={})", s, out_main.display(), go_dir.display());
+        }
+        Err(e) => {
+            println!("cargo:warning=Failed to run go build: {} for {}", e, out_main.display());
+        }
     }
 }
 

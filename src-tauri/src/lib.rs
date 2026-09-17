@@ -18,6 +18,7 @@
 
 mod go_bridge;
 use go_bridge::GoBridge;
+use tauri::Manager;
 
 // Comando de ejemplo original (se mantiene para test)
 #[tauri::command]

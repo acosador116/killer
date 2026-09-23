@@ -5,15 +5,26 @@
 }
 
 /* Layout principal de la app (App.tsx).
-   La app NO hace scroll: la barra arriba, y debajo sidebar + visor
-   reparten el alto fijo de la pantalla. */
+   .app NO flota: ocupa todo el viewport, plano y sin marco.
+   Quienes flotan son las tarjetas dentro del <main> (Explorer,
+   OpenedFiles, FileVisualizer) más el Sidebar; el aire lo dan
+   el padding/gap. NO hace scroll: reparte el alto fijo
+   entre sidebar + visor. */
 .app {
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100vh;
+  /* 100% del #root (que ya mide 100dvh): una sola fuente de alto,
+     sin doble redondeo que recorte el padding inferior. */
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
   overflow: hidden;
   background-color: hsl(var(--background));
+  padding: 8px;
+  gap: 3px;
+  min-width: 0;
+  min-height: 0;
 }
 .container-main {
   display: flex;
@@ -21,6 +32,8 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  gap: 3px;
   overflow: hidden;
 }
 .toolbar {
@@ -57,17 +70,25 @@
   background: hsl(var(--muted));
 }
 
-/* Fila que contiene sidebar + visor. min-height:0 evita que los
-   hijos con overflow rompan el alto fijo del layout. */
+/* El <main>: contenedor transparente, sin marco propio.
+   Solo separa a sus hijos, que son las tarjetas flotantes. */
 .content {
   display: flex;
-  flex: 1;
+  flex: 1 1 0%;
+  min-width: 0;
   min-height: 0;
+  width: 0;
   overflow: hidden;
+  gap: 3px;
 }
 
 @media (max-width: 720px) {
+  .app {
+    padding: 6px;
+    
+  }
   .content {
     flex-direction: column;
+    width: auto;
   }
 }

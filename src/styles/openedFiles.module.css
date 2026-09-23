@@ -1,10 +1,13 @@
 .main {
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     height: 50px;
-    border-bottom: 1px solid hsl(var(--border));
+    border: 1px solid hsl(var(--border));
+    border-radius: 5px 16px 5px 5px;
     display: flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.4rem;
     padding: 0 0.75rem;
     background: hsl(var(--card));
     overflow-x: auto;
@@ -40,8 +43,10 @@
 .openedFile {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     gap: 0.25rem;
-    padding: 0.35rem 0.6rem;
+    height: 28px;
+    padding: 0;
     
     border-radius: 6px;
     background: hsl(var(--muted));
@@ -63,6 +68,8 @@
     color: hsl(var(--foreground));
     font-size: 0.85rem;
     cursor: pointer;
+    height: 100%;
+    padding: 0 0 0 0.35rem;
     max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -77,6 +84,8 @@
     align-items: center;
     justify-content: center;
     padding: 2px;
+    height: 100%;
+    padding: 0 0 0 0.35rem;
     border-radius: 3px;
     transition: background 0.15s ease, color 0.15s ease;
 }

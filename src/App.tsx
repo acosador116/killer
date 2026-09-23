@@ -1,31 +1,4 @@
-/**
- * @file App.tsx — Orquestador principal con soporte Go + fallback web
- *
- * ## Arquitectura con túnel IPC
- * ```text
- *  App.tsx
- *   ├─> fsCache.init(archs) ──> fsService.tree() ──invoke--> Rust ──stdin--> Go
- *   ├─> Explorer (directory + parent) ──> chooseDirectory (async)
- *   ├─> FileVisualizer (currentFile)
- *   └─> ChooseDirectoryOfEnter (rootDir)
- * ```
- *
- * ## Flujo inicial
- * 1. `getInitialDirectory()` lee `localStorage.direction` (última carpeta visitada).
- * 2. `fsCache.init(archs)` intenta cargar árbol real de Go (profundidad 3).
- *    - Si Go está vivo, `rootDir` se actualiza al árbol real.
- *    - Si falla, se queda con `archs` mock (modo web).
- * 3. `directory` se sincroniza con el `rootDir` si el path guardado no existe en el nuevo árbol.
- *
- * ## Ejemplo de navegación real
- * ```ts
- * // Usuario hace doble clic en "/src"
- * chooseDirectory("/src") // -> fileService.listDir("/src") -> Go -> setDirectory
- *
- * // Usuario abre "/src/App.tsx"
- * chooseFile("/src/App.tsx") // -> fileService.readFile() -> Go -> setCurrentFile
- * ```
- */
+
 
 import { createEffect, createSignal, onMount, Show } from "solid-js";
 import styles from "./styles/app.module.css";
@@ -40,6 +13,9 @@ import { ChooseDirectoryOfEnter } from "./components/chooseDirectoryOfEnter";
 import { storageService } from "./services/storageSerivce";
 import { OpenedFiles } from "./components/openedFiles";
 import type { OpenedFile } from "./types/storage";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Badge } from "~/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 
 function App() {
   // Raíz del filesystem: inicia como mock, luego se reemplaza por árbol real de Go
@@ -250,11 +226,7 @@ function App() {
       />
 
       <main class={styles.content}>
-        <Show when={loadingRoot()}>
-          <div style={{ padding: "0.5rem", "font-size": "0.85rem", color: "hsl(var(--muted-foreground))" }}>
-            {isRealFs() ? "Cargando FS real (Go)..." : "Modo mock (web)..."}
-          </div>
-        </Show>
+        
         <Show when={openPanel()}>
           <Explorer
             directory={directory()}

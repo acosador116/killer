@@ -1,32 +1,93 @@
-/* Panel explorador (explorer.tsx / leftSidebar). */
 .sidebar {
   width: 260px;
+
+  min-width: 20px;
+  max-width: 1200px;
+
   flex-shrink: 0;
+
   background: hsl(var(--card));
-  border-right: 1px solid hsl(var(--border));
+
+  /* El borde vuelve al sidebar */
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+
   padding: 1rem 0.75rem;
+
   display: flex;
   flex-direction: column;
+
   gap: 0.75rem;
+
   overflow-y: auto;
-  transition: margin-left 0.25s ease, visibility 0.25s ease;
+  overflow-x: hidden;
+
+  transition:
+    margin-left 0.25s ease,
+    visibility 0.25s ease;
 }
 
-/* Plegado: se desliza fuera; el contenedor tiene overflow hidden. */
+/*
+ * Handle de resize:
+ * - Invisible por defecto (no pinta nada).
+ * - Área ampliada con ::before para agarrar cómodamente.
+ * - Al hacer hover, ilumina el borde del sidebar.
+ */
+.resizeLove {
+  position: relative;
+  z-index: 5;
+
+  width: 1px;
+  flex-shrink: 0;
+
+  margin-left: -1px; /* se superpone al borde del sidebar */
+
+  cursor: col-resize;
+  touch-action: none;
+
+  background: transparent;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  color: hsl(var(--border));
+  transition: background 200ms;
+}
+
+/* Área ampliada (invisible) para capturar el puntero */
+.resizeLove::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -5px;
+  right: -5px;
+}
+
+/* Al hacer hover/arrastrar, resaltamos el borde */
+.resizeLove:hover,
+.resizeLove:active {
+  background: hsl(var(--primary, var(--foreground)));
+}
+
+/* Plegado */
 .sidebar.collapsed {
-  margin-left: -260px;
+  margin-left: -100%;
   visibility: hidden;
 }
 
+/* Cabecera */
 .sidebarHeader {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
   padding: 0.5rem 0.75rem;
+
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+
   color: hsl(var(--muted-foreground));
 }
 
@@ -41,29 +102,39 @@
   font-size: 0.9rem;
   text-transform: none;
   letter-spacing: normal;
+
   color: hsl(var(--foreground));
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fileList {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
-/* Fila "..." para subir un nivel de carpetas. */
 .upRow {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 0.6rem;
+
   padding: 0.5rem 0.75rem;
+
   border: none;
   border-radius: 6px;
+
   background: transparent;
   color: hsl(var(--muted-foreground));
+
   font-size: 0.9rem;
   text-align: left;
   cursor: pointer;
+
   transition: background 0.15s ease;
 }
 
@@ -75,27 +146,39 @@
   display: inline-flex;
   width: 1.25rem;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .error {
   margin: 0;
   padding: 0.6rem 0.75rem;
+
   border-radius: 6px;
+
   background: hsl(var(--destructive) / 0.15);
   color: hsl(var(--destructive-foreground));
+
   font-size: 0.82rem;
 }
 
+/* Responsive */
 @media (max-width: 720px) {
   .sidebar {
     width: 100%;
+    min-width: 0;
+    max-width: none;
+
     border-right: none;
     border-bottom: 1px solid hsl(var(--border));
   }
 
-  /* En vertical el deslizamiento horizontal no tiene gracia. */
+  .resizeLove {
+    display: none;
+  }
+
   .sidebar.collapsed {
     display: none;
     margin-left: 0;
+    visibility: visible;
   }
 }

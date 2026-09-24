@@ -119,7 +119,7 @@ impl GoBridge {
                     }
                 }
                 // AppImage monta resources al lado del binario
-                for sub in ["../resources/killer-go", "../lib/killer/killer-go"] {
+                for sub in ["../resources/killer-go", "../lib/killer/killer-go", "../lib/killer/binaries/killer-go"] {
                     let p = dir.join(sub);
                     if p.exists() {
                         return p;
